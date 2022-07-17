@@ -44,6 +44,7 @@ class Model():
         
         y_hat = self.forward(x, is_training = is_training)
         
+        # only the last prediction 
         cost_i = self.loss_func(y_true = target[:,-1,0],
                                 y_pred = y_hat[:,-1,0] )
         
@@ -92,6 +93,7 @@ class Model():
                         print("Epoch: %i, j: %i, Cost: %.6f, Cost_test: %.6f" % (epoch, j, cost_i,cost_test ))
         
         if verbos:
+            plt.figure(101)
             plt.plot(cost_vec, label = 'loss train')
             plt.plot(initVec,cost_test_vec, label = 'loss test ')
             plt.legend(frameon=False)
@@ -115,22 +117,31 @@ nnet = Transformer_Encoder_Decoder_Keras(num_layer_encoder = 2, num_layer_decode
                                          dff = 4, d_model = 10, targetDims = 1,
                                          num_of_heads = 8, dropoutRate=0.0, 
                                          activate_embedding = True, d_model_embed =  1)
+# dff = 4 means we have 4*d_model hidden neurons in the feed forward layer 
 learning_rate = 0.0002#CustomSchedule(d_model = 10)
 
 model = Model(nnet = nnet, learning_rate=learning_rate)
 
 
-
+plt.rcParams["font.family"] = "Times New Roman"
+plt.rcParams['font.size'] = '16' # was 12
 
 # make the original data 
 
-series, validation_series = getSeriesData()
-
+series, validation_series = getSeriesData(n = 1500)
+plt.figure(22)
+plt.plot(series[-100:], 'k', label = 'Train data')
+plt.plot(np.arange(len(validation_series)) + len(series[-100:]),validation_series, 
+         'r',label = 'Validation data')
+plt.legend(frameon=False, loc = 2)
+plt.ylim([-1.5,1.5])
+plt.xlabel('Time')
+plt.ylabel('Value')
 ## build the dataset for Encoder decoder Transformer  
 # let's see if we can use T past values to predict the next value
 T  = 5
 plt.rcParams["font.family"] = "Times New Roman"
-plt.rcParams['font.size'] = '12'
+plt.rcParams['font.size'] = '12' # was 12
 
 (X_general_train, Y_train, 
  X_test_general, Y_test, 
@@ -193,28 +204,32 @@ plt.ylim([-1.5,2.2])
 
 plt.figure(4)
 error = np.abs(y_self_prediction[:-6] - validation_series[6:])
+error2 = np.abs(y_hat_new - validation_series[6:])
 plt.plot(error, c = 'k')
 plt.xlabel('# Steps')
 plt.ylabel('|Error Value|')
 
 #####################################
 fig, axes = plt.subplots(3,1)
-axes[0].plot(validation_series[6:], label = r'$Y$')
+axes[0].plot(validation_series[6:],c ='r', label = r'$Y$')
 axes[0].plot(y_hat_new , label = r'$\hat{Y} \ (Single-shot)$')
-axes[0].legend(frameon = False)
+axes[0].legend(frameon = False, loc = 2)
 axes[0].set_xlabel('# Steps')
 axes[0].set_ylabel('Value')
-axes[0].set_ylim([-1.5,3.5])
+axes[0].set_ylim([-1.5,4])
 
 
-axes[1].plot(validation_series[6:], label = r'$Y$')
+axes[1].plot(validation_series[6:],c ='r', label = r'$Y$')
 axes[1].plot(y_self_prediction[:-6], label = r'$\hat{Y} (Autoregressive) $')
-axes[1].legend(frameon = False)
-axes[1].set_ylim([-1.5,3.5])
+axes[1].legend(frameon = False, loc = 2)
+axes[1].set_ylim([-1.5,4])
 axes[1].set_xlabel('# Steps')
 axes[1].set_ylabel('Value')
 
 
-axes[2].plot(error, c = 'k')
+axes[2].plot(error2,  '--k', label = 'Single-shot')
+axes[2].plot(error, c = 'k', label = 'Autoregressive')
+axes[2].legend(frameon = False, loc = 2)
 axes[2].set_xlabel('# Steps')
 axes[2].set_ylabel('|Error Value|')
+axes[2].set_ylim([-1.5,4])

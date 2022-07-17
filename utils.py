@@ -71,10 +71,11 @@ def positional_endcoding(positions, d_model):
     return out
 
 
-def getSeriesData():
-    seriesGeneral = np.sin((0.1 * np.arange(500)) **2 ) # x(t) = sin(w*t**2)
-    validation_series = seriesGeneral[-100:]
-    series = seriesGeneral[:-100]
+def getSeriesData(n = 1000):
+    n_part = 100 #int(n*0.1) #10% for validation 
+    seriesGeneral = np.sin((0.1 * np.arange(n)) **2 ) # x(t) = sin(w*t**2)
+    validation_series = seriesGeneral[-n_part:]
+    series = seriesGeneral[:-n_part]
     return series, validation_series
 
 def prepare_data_for_encoder_decoder_transformer(series, validation_series, T = 5 ):
